@@ -6,8 +6,9 @@ import * as colors from "./colors"
 import { convertToDuration, formatInputString } from "./helpers"
 
 function App() {
-  // timer in seconds - start with 60 seconds
-  const [currentDate, setCurrentDate] = useState(new Date())
+  // currentDate is unused, we just use setCurrentDate to update the component
+  // so the effects hooks trigger, it's not the best practice but it works
+  const [milliseconds, setMilliseconds] = useState(0)
   const [timerDuration, setTimerDuration] = useState("00:04:20") // 4:20
   const [finishDate, setFinishDate] = useState(new Date())
   const [isActive, setTimerActive] = useState(false)
@@ -18,7 +19,7 @@ function App() {
     if (isActive) {
       timer = setTimeout(() => {
         calculateTimeDifference()
-      }, 300)
+      }, 100)
     } else {
       clearTimeout(timer)
     }
@@ -68,8 +69,11 @@ function App() {
 
   const calculateTimeDifference = () => {
     const updatedCurrentDate = new Date()
-    setCurrentDate(updatedCurrentDate)
-    const diffInSeconds = differenceInSeconds(finishDate, currentDate)
+    const ms =
+      finishDate.getMilliseconds() - updatedCurrentDate.getMilliseconds()
+    setMilliseconds(ms < 0 ? 1000 - Math.abs(ms) : ms)
+
+    const diffInSeconds = differenceInSeconds(finishDate, updatedCurrentDate)
     const timeLeft = convertToDuration(diffInSeconds)
     setTimerDuration(timeLeft)
   }
@@ -103,9 +107,20 @@ function App() {
               value={timerDuration}
             />
           ) : (
-            <h3 onClick={() => !isActive && setTimerEdit(true)}>
-              {timerDuration}
-            </h3>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <h3 onClick={() => !isActive && setTimerEdit(true)}>
+                {timerDuration}
+              </h3>
+              <span style={{ marginLeft: "4px", width: "40px" }}>
+                {isActive && milliseconds}
+              </span>
+            </div>
           )}
           <Row style={{ display: "flex", justifyContent: "center" }}>
             <Button
